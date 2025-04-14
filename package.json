@@ -1,0 +1,30 @@
+{
+  "name": "portbackend",
+  "version": "1.0.0",
+  "description": "Support chat backend with file upload and message handling",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chat",
+    "nodejs",
+    "support",
+    "backend",
+    "mongo",
+    "upload"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.13.2",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0"
+  }
+}
