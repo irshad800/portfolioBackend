@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Chat</title>
+  <style>
+    body { font-family: Arial; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+    .sidebar {
+      width: 30%; border-right: 1px solid #ddd; overflow-y: auto; background: #f5f5f5;
+    }
+    .sidebar h3 { padding: 15px; margin: 0; background: #25d366; color: white; }
+    .user {
+      padding: 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #ddd;
+      position: relative;
+    }
+    .user:hover { background: #e0ffe3; }
+    .badge {
+      background: red;
+      color: white;
+      padding: 2px 6px;
+      font-size: 12px;
+      border-radius: 50%;
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column; background: #ece5dd;
+    }
+    .chat-box {
+      flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
+    }
+    .msg {
+      max-width: 60%; margin: 10px; padding: 10px;
+      border-radius: 10px; word-break: break-word;
+    }
+    .admin-msg {
+      align-self: flex-end;
+      background: #dcf8c6;
+    }
+    .user-msg {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+    .unread-highlight {
+      background: #fff3cd !important;
+    }
+    .status {
+      font-size: 12px;
+      color: gray;
+      margin-top: 4px;
+      text-align: right;
+    }
+    form {
+      display: flex; gap: 10px;
+      padding: 10px; background: #fff; border-top: 1px solid #ddd;
+    }
+    textarea, input[type="file"] {
+      flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px; background: #25d366; color: white;
+      border: none; border-radius: 5px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h3>Users</h3>
+  <div id="userList"></div>
+</div>
+
+<div class="chat-area">
+  <div class="chat-box" id="chatBox"></div>
+  <form id="replyForm" enctype="multipart/form-data" style="display: none;">
+    <input type="hidden" name="senderId" id="adminSenderId" />
+    <input type="hidden" name="senderType" value="admin" />
+    <textarea name="message" placeholder="Reply (optional)"></textarea>
+    <input type="file" name="files" />
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<script>
+  const BASE_URL = 'http://localhost:5000/api/chat';
+  const chatBox = document.getElementById('chatBox');
+  const replyForm = document.getElementById('replyForm');
+  const adminSenderIdInput = document.getElementById('adminSenderId');
+  const userList = document.getElementById('userList');
+  let selectedUser = '';
+
+  async function loadUsers() {
+    const res = await fetch(`${BASE_URL}/users`);
+    const users = await res.json();
+
+    userList.innerHTML = '';
+    for (const user of users) {
+      const unreadRes = await fetch(`${BASE_URL}/messages/${user._id}`);
+      const allMessages = await unreadRes.json();
+      const unreadCount = allMessages.filter(m => m.senderType === 'user' && !m.read).length;
+
+      const div = document.createElement('div');
+      div.className = 'user';
+      div.textContent = user._id;
+
+      if (unreadCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = unreadCount;
+        div.appendChild(badge);
+      }
+
+      div.onclick = () => openChat(user._id);
+      userList.appendChild(div);
+    }
+  }
+
+  async function openChat(senderId) {
+    selectedUser = senderId;
+    adminSenderIdInput.value = senderId;
+    replyForm.style.display = 'flex';
+    await markRead(senderId);
+    await loadMessages(senderId);
+  }
+
+  async function markRead(senderId) {
+    await fetch(`${BASE_URL}/mark-read/${senderId}`, { method: 'PUT' });
+  }
+
+  async function loadMessages(senderId) {
+    const res = await fetch(`${BASE_URL}/messages/${senderId}`);
+    const messages = await res.json();
+
+    chatBox.innerHTML = '';
+    let unreadDividerShown = false;
+
+    messages.forEach((msg, i) => {
+      if (!msg.read && msg.senderType === 'user' && !unreadDividerShown) {
+        const divider = document.createElement('div');
+        divider.innerHTML = '<hr><div style="text-align:center;color:#666;">Unread messages</div><hr>';
+        chatBox.appendChild(divider);
+        unreadDividerShown = true;
+      }
+
+      const div = document.createElement('div');
+      div.className = 'msg ' + (msg.senderType === 'admin' ? 'admin-msg' : 'user-msg');
+      if (!msg.read && msg.senderType === 'user') {
+        div.classList.add('unread-highlight');
+      }
+
+      div.innerHTML = `${msg.message || ''}${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}`;
+      chatBox.appendChild(div);
+
+      // Only show status under last admin message
+      const isLastAdmin = msg.senderType === 'admin' && [...messages].reverse().find(m => m.senderType === 'admin') === msg;
+      if (isLastAdmin) {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'status';
+        statusDiv.textContent = msg.read ? '✅ Read' : '🕓 Sent';
+        div.appendChild(statusDiv);
+      }
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  replyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(replyForm);
+    await fetch(`${BASE_URL}/send`, {
+      method: 'POST',
+      body: formData
+    });
+    replyForm.reset();
+    await loadMessages(selectedUser);
+  });
+
+  loadUsers();
+  setInterval(() => {
+    if (selectedUser) loadMessages(selectedUser);
+    loadUsers();
+  }, 5000);
+</script>
+
+</body>
+</html>

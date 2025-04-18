@@ -1,5 +1,6 @@
+// 📁 routes/chat.js
+
 const express = require('express');
-const path = require('path');
 const multer = require('multer');
 const { v2: cloudinary } = require('cloudinary');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -16,48 +17,26 @@ cloudinary.config({
 
 // 📦 Cloudinary Storage
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
-    folder: 'chat_uploads',
-    allowed_formats: ['jpg', 'png', 'pdf', 'mp4'], // add more if needed
+    folder: 'support_chat_uploads',
+    allowed_formats: ['jpg', 'png', 'pdf', 'mp4'],
   },
 });
 
 const upload = multer({ storage });
 
-/**
- * 📥 GET all messages
- */
-router.get('/messages', async (req, res) => {
-  try {
-    const messages = await Message.find().sort({ createdAt: 1 });
-    res.json(messages);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-/**
- * 📥 GET unread messages
- */
-router.get('/messages/unread', async (req, res) => {
-  try {
-    const unreadMessages = await Message.find({ read: false }).sort({ createdAt: 1 });
-    res.json(unreadMessages);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-/**
- * 📤 POST send message with file(s)
- */
+// ✅ Send message (text/file or both)
 router.post('/send', upload.array('files', 5), async (req, res) => {
   try {
-    const { senderId, senderType, message } = req.body;
+    const { senderId, senderType } = req.body;
+    const message = req.body.message || '';
+
+    if (!message && (!req.files || req.files.length === 0)) {
+      return res.status(400).json({ success: false, error: 'Message or file is required.' });
+    }
 
     let fileData = [];
-
     if (req.files && req.files.length > 0) {
       fileData = req.files.map(file => ({
         fileUrl: file.path,
@@ -69,37 +48,81 @@ router.post('/send', upload.array('files', 5), async (req, res) => {
       senderId,
       senderType,
       message,
-      fileUrl: fileData.length ? fileData[0].fileUrl : null,
-      fileType: fileData.length ? fileData[0].fileType : null,
-      read: false, // default unread
+      fileUrl: fileData[0]?.fileUrl || null,
+      fileType: fileData[0]?.fileType || null,
+      read: false,
     });
 
     await newMsg.save();
-
-    res.json({ success: true, data: newMsg, files: fileData });
+    res.json({ success: true, data: newMsg });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-/**
- * ✅ PUT mark message as read/unread
- */
-router.put('/messages/:id/read', async (req, res) => {
+// ✅ Get messages for specific user
+router.get('/messages/:senderId', async (req, res) => {
   try {
-    const { read } = req.body;
+    const messages = await Message.find({
+      $or: [
+        { senderId: req.params.senderId },
+        { senderType: 'admin', senderId: req.params.senderId }
+      ]
+    }).sort({ createdAt: 1 });
 
-    const message = await Message.findByIdAndUpdate(
-      req.params.id,
-      { read },
-      { new: true }
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ✅ Get unique users list for admin with unread count
+router.get('/users', async (req, res) => {
+  try {
+    const users = await Message.aggregate([
+      { $match: { senderType: 'user' } },
+      {
+        $group: {
+          _id: '$senderId',
+          lastMessage: { $last: "$message" },
+          lastTime: { $last: "$createdAt" },
+          unreadCount: {
+            $sum: {
+              $cond: [{ $eq: ["$read", false] }, 1, 0]
+            }
+          }
+        }
+      },
+      { $sort: { lastTime: -1 } }
+    ]);
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ✅ Mark all user messages as read (admin views chat)
+router.put('/mark-read/:senderId', async (req, res) => {
+  try {
+    await Message.updateMany(
+      { senderId: req.params.senderId, senderType: 'user', read: false },
+      { $set: { read: true } }
     );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
-    if (!message) {
-      return res.status(404).json({ success: false, message: 'Message not found' });
-    }
-
-    res.json({ success: true, message });
+// ✅ Mark all admin messages as read (user views chat)
+router.put('/user-mark-read/:senderId', async (req, res) => {
+  try {
+    await Message.updateMany(
+      { senderId: req.params.senderId, senderType: 'admin', read: false },
+      { $set: { read: true } }
+    );
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

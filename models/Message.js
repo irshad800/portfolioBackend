@@ -1,15 +1,13 @@
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
-  senderId: String,
-  senderType: String,
+  senderId: String,        // From localStorage in browser
+  senderType: String,      // 'user' or 'admin'
   message: String,
   fileUrl: String,
   fileType: String,
-  read: {
-    type: Boolean,
-    default: false, // all messages start as unread
-  }
-}, { timestamps: true });
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
 
 module.exports = mongoose.model('Message', messageSchema);

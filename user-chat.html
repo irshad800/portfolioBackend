@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Chat</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #ece5dd;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 600px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .chat-header {
+      background: #25d366;
+      padding: 15px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      background: #ece5dd;
+    }
+
+    .msg {
+      max-width: 70%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      word-wrap: break-word;
+      position: relative;
+    }
+
+    .user-msg {
+      align-self: flex-end;
+      background: #dcf8c6;
+    }
+
+    .admin-msg {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    .status {
+      font-size: 12px;
+      color: gray;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .admin-status {
+      text-align: left;
+    }
+
+    .unread-highlight {
+      background: #fff3cd !important;
+    }
+
+    .chat-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+
+    textarea, input[type="file"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #25d366;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1da851;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">🧑‍💻 Support Chat</div>
+  <div class="chat-box" id="chatBox"></div>
+
+  <form id="chatForm" class="chat-form" enctype="multipart/form-data">
+    <input type="hidden" name="senderId" id="senderId" />
+    <input type="hidden" name="senderType" value="user" />
+    <textarea name="message" id="message" placeholder="Type your message (optional if file)..."></textarea>
+    <input type="file" name="files" id="files" />
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<!-- [ Everything else remains the same above this line ] -->
+
+
+
+<script>
+  const BASE_URL = 'http://localhost:5000/api/chat';
+  const chatBox = document.getElementById('chatBox');
+  const senderId = localStorage.getItem('chat_user_id') || `user_${Date.now()}`;
+  localStorage.setItem('chat_user_id', senderId);
+  document.getElementById('senderId').value = senderId;
+
+  async function loadMessages() {
+    // ✅ FIRST mark admin messages as read (before render)
+    await fetch(`${BASE_URL}/mark-read/${senderId}`, { method: 'PUT' });
+
+    const res = await fetch(`${BASE_URL}/messages/${senderId}`);
+    const messages = await res.json();
+    chatBox.innerHTML = '';
+
+    // ✅ No need to show divider if nothing is unread
+    const firstUnreadIndex = messages.findIndex(m => m.senderType === 'admin' && !m.read);
+    let dividerInserted = false;
+
+    messages.forEach((msg, i) => {
+      if (!dividerInserted && i === firstUnreadIndex) {
+        const divider = document.createElement('div');
+        divider.innerHTML = '<hr><div style="text-align:center;color:#666;">New Messages</div><hr>';
+        chatBox.appendChild(divider);
+        dividerInserted = true;
+      }
+
+      const div = document.createElement('div');
+      div.className = 'msg ' + (msg.senderType === 'admin' ? 'admin-msg' : 'user-msg');
+      if (!msg.read && msg.senderType === 'admin') {
+        div.classList.add('unread-highlight');
+      }
+
+      div.innerHTML = `
+        ${msg.message || ''}
+        ${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}
+      `;
+      chatBox.appendChild(div);
+
+      // ✅ Only under last user message
+      const isLastUserMsg = msg.senderType === 'user' &&
+        [...messages].reverse().find(m => m.senderType === 'user') === msg;
+
+      if (isLastUserMsg) {
+        const status = msg.read ? '✅ Read' : '🕓 Sent';
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'status';
+        statusDiv.textContent = status;
+        chatBox.appendChild(statusDiv);
+      }
+    });
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  document.getElementById('chatForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById('files');
+    const messageInput = document.getElementById('message');
+    const hasFile = fileInput.files.length > 0;
+    const hasMessage = messageInput.value.trim() !== '';
+
+    if (!hasFile && !hasMessage) {
+      alert('Please enter a message or select a file.');
+      return;
+    }
+
+    const formData = new FormData(e.target);
+    await fetch(`${BASE_URL}/send`, {
+      method: 'POST',
+      body: formData
+    });
+
+    e.target.reset();
+    await loadMessages();
+  });
+
+  // ✅ Refresh every 3 seconds
+  loadMessages();
+  setInterval(loadMessages, 3000);
+</script>
+
+
+</body>
+</html>
