@@ -1,0 +1,637 @@
+//<<<--- Banner Breadcrumnd --->>>>//
+.bread-arrow-inner {
+	display: flex;
+	gap: 45px;
+	@include breakpoint(max-xxl) {
+		gap: 30px;
+		.arrow {
+			width: 800px;
+			img {
+				width: 100%;
+			}
+		}
+	}
+	@include breakpoint(max-sm) {
+		gap: 7px;
+		display: grid;
+		.arrow {
+			width: 80%;
+			img {
+				width: 100%;
+			}
+		}
+		p {
+			font-size: 14px;
+		}
+	}
+}
+//<<<--- Banner Breadcrumnd --->>>>//
+
+//<<<--- text alider --->>>>//
+.scrolling-wrap {
+	overflow: hidden;
+	white-space: nowrap;
+	display: flex;
+	gap: 16px;
+	.comm {
+		display: flex;
+		align-items: center;
+		animation: scroll 60s linear infinite;
+		gap: 16px;
+		cursor: pointer;
+		.slach,
+		.cmn-textslide {
+			color: var(--white);
+			font-size: 36px;
+			font-weight: 600;
+		}
+		.text-custom-storke {
+			-webkit-text-stroke: 1px rgb(255, 247, 247);
+			-webkit-text-fill-color: transparent;
+		}
+	}
+	&:hover {
+		.comm {
+			animation-play-state: paused;
+		}
+	}
+}
+.service-scroll-textwrap {
+	.comm {
+		.cmn-textslide {
+			font-size: 160px;
+			line-height: 170px;
+			color: var(--white);
+			text-transform: uppercase;
+		}
+	}
+	@include breakpoint(max-xxxl) {
+		.comm {
+			.cmn-textslide {
+				font-size: 100px;
+				line-height: 110px;
+			}
+		}
+	}
+	@include breakpoint(max-xxl) {
+		.comm {
+			.cmn-textslide {
+				font-size: 80px;
+				line-height: 90px;
+			}
+		}
+	}
+	@include breakpoint(max-xl) {
+		.comm {
+			.cmn-textslide {
+				font-size: 60px;
+				line-height: 70px;
+			}
+		}
+	}
+	@include breakpoint(max-md) {
+		.comm {
+			.cmn-textslide {
+				font-size: 40px;
+				line-height: 50px;
+			}
+		}
+	}
+	@include breakpoint(max-sm) {
+		.comm {
+			.cmn-textslide {
+				font-size: 30px;
+				line-height: 40px;
+			}
+		}
+	}
+}
+@keyframes scroll {
+	0% {
+		transform: translateX(0);
+	}
+	100% {
+		transform: translateX(-100%);
+	}
+}
+@keyframes scrollre {
+	100% {
+		transform: translateX(0);
+	}
+	0% {
+		transform: translateX(-100%);
+	}
+}
+@keyframes scroll2 {
+	0% {
+		transform: translateX(0%);
+	}
+	100% {
+		transform: translateX(-200%);
+	}
+}
+//text scroll one
+.textslide-solution {
+	padding: 60px 0 200px;
+	overflow: hidden;
+	.textsslide-hoverbox {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: 1;
+		transform: translate(-50%, -50%);
+		.hover-circle {
+			width: 200px;
+			border: unset;
+			height: 200px;
+			background: var(--white);
+			.box {
+				i,
+				span {
+					color: var(--title) !important;
+				}
+			}
+		}
+	}
+}
+.mycustom-marque {
+	background-color: rgb(33, 33, 33);
+	padding: 30px 1px;
+	transform: rotate(4deg);
+	position: relative;
+	&::before {
+		position: absolute;
+		top: 0;
+		left: -20px;
+		width: 2100px;
+		height: 100%;
+		content: "";
+		background-color: rgb(33, 33, 33);
+	}
+}
+.mycustom-marque2 {
+	background-color: rgb(248, 247, 239);
+	padding: 30px 1px;
+	transform: rotate(-4deg);
+	.comm {
+		animation: scrollre 60s linear infinite;
+		.slach,
+		.cmn-textslide {
+			color: var(--title);
+			font-size: 36px;
+			font-weight: 600;
+		}
+	}
+}
+.version-two-marque {
+	transform: translateY(107px);
+}
+@include breakpoint(max-xl) {
+	.textslide-solution {
+		padding: 40px 0 50px;
+		.textsslide-hoverbox {
+			top: 50%;
+			left: 50%;
+			z-index: 1;
+			transform: translate(-50%, -50%);
+			.hover-circle {
+				width: 160px;
+				height: 160px;
+			}
+		}
+	}
+	.mycustom-marque {
+		padding: 16px 1px;
+		transform: rotate(0deg);
+		.comm {
+			.slach,
+			.cmn-textslide {
+				font-size: 20px;
+				font-weight: 600;
+			}
+		}
+	}
+	.mycustom-marque2 {
+		transform: rotate(0deg);
+		padding: 16px 1px;
+		.comm {
+			animation: scrollre 60s linear infinite;
+			.slach,
+			.cmn-textslide {
+				font-size: 20px;
+				font-weight: 600;
+			}
+		}
+	}
+	.version-two-marque {
+		transform: translateY(0px);
+	}
+}
+@include breakpoint(max-lg) {
+	.textslide-solution {
+		padding: 40px 0 50px;
+		.textsslide-hoverbox {
+			.hover-circle {
+				width: 130px;
+				height: 130px;
+			}
+		}
+	}
+}
+//text scroll one
+
+//Exprience001
+.education-inner {
+	display: grid;
+	gap: 30px;
+}
+.edu-lining {
+	border-radius: 2px;
+	height: 100%;
+	width: 4px;
+	border-left: 4px solid var(--cmborder);
+	display: grid;
+	justify-content: space-around;
+	align-items: center;
+	position: relative;
+	.edu-l1 {
+		box-shadow: var(--cmn-shadow);
+		padding: 20px;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		i {
+			font-size: 46px;
+			color: var(--white);
+		}
+		&:nth-child(1) {
+			position: absolute;
+			top: 110px;
+			left: -25px;
+		}
+		&:nth-child(2) {
+			position: absolute;
+			top: 380px;
+			left: -25px;
+		}
+		&:nth-child(3) {
+			position: absolute;
+			bottom: 100px;
+			left: -25px;
+		}
+	}
+}
+.education-item {
+	padding: 40px 30px;
+	.educa-head {
+		h4 {
+			margin-bottom: 10px;
+		}
+		border-bottom: 1px solid var(--cusborder);
+		padding-bottom: 26px;
+		margin-bottom: 24px;
+	}
+	p {
+		font-size: 16px;
+		line-height: 26px;
+	}
+}
+.exprience-section-v01 {
+	@include breakpoint(max-xxxl) {
+		.edu-lining {
+			width: 4px;
+			margin: 0 auto;
+		}
+	}
+	@include breakpoint(max-xl) {
+		.education-item {
+			padding: 30px 20px;
+			.educa-head {
+				h4 {
+					font-size: 20px;
+				}
+			}
+			p {
+				font-size: 14px;
+				line-height: 24px;
+			}
+		}
+	}
+	@include breakpoint(max-lg) {
+		.education-inner {
+			gap: 24px;
+		}
+	}
+	@include breakpoint(max-lg) {
+		.education-item {
+			padding: 30px 20px;
+			.educa-head {
+				h4 {
+					font-size: 18px;
+					font-weight: 500;
+				}
+				span {
+					font-size: 13px;
+				}
+			}
+			p {
+				font-size: 12px;
+				line-height: 24px;
+			}
+		}
+	}
+}
+//Exprience001
+
+// Pricing Plan
+.price-item {
+	border-radius: 110px;
+	padding: 55px 20px;
+	h5 {
+		margin-bottom: 32px;
+	}
+	.pri-title {
+		font-size: 52px;
+		line-height: 62px;
+		font-weight: 500;
+		span {
+			font-size: 16px;
+			font-weight: 400;
+		}
+	}
+	.pri-list {
+		margin-top: 35px;
+		margin-bottom: 55px;
+		display: grid;
+		gap: 20px;
+		li {
+			font-size: 16px;
+			color: var(--pra);
+			position: relative;
+			display: flex;
+			align-items: center;
+			padding-left: 18px;
+			font-weight: 400;
+			&::before {
+				position: absolute;
+				left: 0;
+				width: 6px;
+				height: 6px;
+				content: "";
+				border-radius: 50%;
+				background: var(--white);
+			}
+		}
+	}
+	.hover-circle {
+		width: 160px;
+		height: 160px;
+		margin: 0 auto;
+	}
+	@include breakpoint(max-xxl) {
+		padding: 45px 20px;
+		h5 {
+			margin-bottom: 24px;
+		}
+		.pri-title {
+			font-size: 44px;
+			line-height: 50px;
+			span {
+				font-size: 16px;
+			}
+		}
+		.pri-list {
+			margin-top: 20px;
+			margin-bottom: 40px;
+			gap: 14px;
+			li {
+				font-size: 14px;
+			}
+		}
+		.hover-circle {
+			width: 140px;
+			height: 140px;
+		}
+	}
+}
+// Pricing Plan
+
+// Protfolio Project
+.tabitem {
+	transform: translateY(100px);
+	position: absolute;
+	z-index: -1;
+	top: 0;
+	width: 100%;
+	opacity: 0;
+	visibility: hidden;
+	transition: 0.5s all;
+}
+
+.tabitem.active {
+	position: initial;
+	z-index: 1;
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+.project-proft-tab {
+	.tablinks {
+		display: flex;
+		align-items: center;
+		gap: 60px;
+		.nav-links {
+			button {
+				padding: 0 0;
+				border: none;
+				background: transparent;
+				display: inline-block;
+				font-size: 16px;
+				color: var(--pra);
+			}
+			&.active {
+				button {
+					color: var(--white);
+				}
+			}
+		}
+	}
+	.project-head {
+		border-bottom: 2px solid var(--cmborder);
+		padding-bottom: 30px;
+		margin-bottom: 60px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	@include breakpoint(max-lg) {
+		.tablinks {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 12px 24px;
+			.nav-links {
+				button {
+					font-size: 14px;
+				}
+			}
+		}
+		.project-head {
+			padding-bottom: 20px;
+			margin-bottom: 40px;
+			flex-wrap: wrap;
+			gap: 16px;
+		}
+	}
+}
+.protfolio-porject-item {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	.project-cont-inner {
+		width: 88%;
+		height: 90%;
+		background: var(--white);
+		position: absolute;
+		transition: all 0.5s;
+		opacity: 0;
+		visibility: hidden;
+		transform: scale(0);
+		.date-title {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+		}
+		.project-cont-box {
+			h4 {
+				margin-bottom: 30px;
+			}
+			.ui-badge {
+				background: var(--title);
+				border-radius: 100px;
+				padding: 8px 18px;
+				color: var(--white);
+				font-size: 14px;
+			}
+		}
+	}
+	img {
+		width: 100%;
+		height: 100%;
+	}
+	@include breakpoint(max-xxl) {
+		.project-cont-inner {
+			width: 94%;
+			height: 95%;
+			.date-title {
+				top: 0px;
+				right: 0px;
+				font-size: 14px;
+			}
+			.project-cont-box {
+				h4 {
+					margin-bottom: 20px;
+					font-size: 18px;
+				}
+				.ui-badge {
+					padding: 8px 18px;
+					font-size: 10px;
+				}
+			}
+		}
+	}
+	&:hover {
+		.project-cont-inner {
+			opacity: 1;
+			visibility: visible;
+			transform: scale(1);
+		}
+	}
+}
+// Protfolio Project
+
+// Protfolio Project Details
+.max-458 {
+	max-width: 558px;
+	margin: 0 auto;
+}
+.single-project {
+	.single-head {
+		border-bottom: 2px solid var(--cmborder);
+		padding-bottom: 30px;
+		margin-bottom: 60px;
+		text-align: center;
+	}
+	@include breakpoint(max-xxl) {
+		padding-bottom: 20px;
+		margin-bottom: 40px;
+	}
+}
+.protfolio-details-wrap {
+	.des-dated-area {
+		display: grid;
+		gap: 22px;
+		.dates-item {
+			display: flex;
+			.date-text {
+				min-width: 140px;
+				display: block;
+				font-size: 16px;
+				font-weight: 400;
+				color: var(--white);
+			}
+			span,
+			p {
+				font-size: 16px;
+			}
+		}
+	}
+	.date-border {
+		width: 100%;
+		height: 2px;
+		background: var(--cmborder);
+	}
+	@include breakpoint(max-xl) {
+		.des-dated-area {
+			display: grid;
+			gap: 20px;
+			.dates-item {
+				display: flex;
+				.date-text {
+					padding-right: 18px;
+					min-width: initial;
+					font-size: 14px;
+					font-weight: 400;
+				}
+				span,
+				p {
+					font-size: 14px;
+				}
+			}
+		}
+	}
+}
+.project-detial-right{
+	display: grid;
+	gap: 30px;
+	@include breakpoint(max-xxl){
+		gap: 20px;
+	}
+}
+// Protfolio Project Details
+
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code
+// Recent Code

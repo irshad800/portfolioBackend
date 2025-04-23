@@ -68,18 +68,14 @@
       text-align: right;
     }
 
-    .admin-status {
-      text-align: left;
-    }
-
     .unread-highlight {
       background: #fff3cd !important;
     }
 
     .chat-form {
       display: flex;
-      flex-direction: column;
       gap: 10px;
+      flex-direction: column;
       padding: 10px;
       background: #fff;
       border-top: 1px solid #ddd;
@@ -103,6 +99,13 @@
     button:hover {
       background: #1da851;
     }
+
+    .new-divider {
+      text-align: center;
+      color: #666;
+      font-size: 13px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
@@ -120,10 +123,6 @@
   </form>
 </div>
 
-<!-- [ Everything else remains the same above this line ] -->
-
-
-
 <script>
   const BASE_URL = 'http://localhost:5000/api/chat';
   const chatBox = document.getElementById('chatBox');
@@ -131,67 +130,81 @@
   localStorage.setItem('chat_user_id', senderId);
   document.getElementById('senderId').value = senderId;
 
-  async function loadMessages() {
-    // ✅ FIRST mark admin messages as read (before render)
-    await fetch(`${BASE_URL}/mark-read/${senderId}`, { method: 'PUT' });
-
-    const res = await fetch(`${BASE_URL}/messages/${senderId}`);
-    const messages = await res.json();
-    chatBox.innerHTML = '';
-
-    // ✅ No need to show divider if nothing is unread
-    const firstUnreadIndex = messages.findIndex(m => m.senderType === 'admin' && !m.read);
-    let dividerInserted = false;
-
-    messages.forEach((msg, i) => {
-      if (!dividerInserted && i === firstUnreadIndex) {
-        const divider = document.createElement('div');
-        divider.innerHTML = '<hr><div style="text-align:center;color:#666;">New Messages</div><hr>';
-        chatBox.appendChild(divider);
-        dividerInserted = true;
-      }
-
-      const div = document.createElement('div');
-      div.className = 'msg ' + (msg.senderType === 'admin' ? 'admin-msg' : 'user-msg');
-      if (!msg.read && msg.senderType === 'admin') {
-        div.classList.add('unread-highlight');
-      }
-
-      div.innerHTML = `
-        ${msg.message || ''}
-        ${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}
-      `;
-      chatBox.appendChild(div);
-
-      // ✅ Only under last user message
-      const isLastUserMsg = msg.senderType === 'user' &&
-        [...messages].reverse().find(m => m.senderType === 'user') === msg;
-
-      if (isLastUserMsg) {
-        const status = msg.read ? '✅ Read' : '🕓 Sent';
-        const statusDiv = document.createElement('div');
-        statusDiv.className = 'status';
-        statusDiv.textContent = status;
-        chatBox.appendChild(statusDiv);
-      }
-    });
-
-    chatBox.scrollTop = chatBox.scrollHeight;
+  async function markAdminMessagesRead() {
+    await fetch(`${BASE_URL}/user-mark-read/${senderId}`, { method: 'PUT' });
   }
+
+ async function loadMessages() {
+  const res = await fetch(`${BASE_URL}/messages/${senderId}`);
+  const messages = await res.json();
+  chatBox.innerHTML = '';
+
+  let newMessagesInserted = false;
+  let unreadInsertedAtIndex = -1;
+
+  // Find the index of the first unread admin message
+  const firstUnreadIndex = messages.findIndex(
+    (m) => m.senderType === 'admin' && !m.read
+  );
+
+  messages.forEach((msg, index) => {
+    // Insert New Messages divider BEFORE the first unread admin message
+    if (
+      !newMessagesInserted &&
+      index === firstUnreadIndex &&
+      msg.senderType === 'admin' &&
+      !msg.read
+    ) {
+      const divider = document.createElement('div');
+      divider.className = 'new-divider';
+      divider.innerHTML = '<hr><div>New Messages</div><hr>';
+      chatBox.appendChild(divider);
+      newMessagesInserted = true;
+      unreadInsertedAtIndex = index;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'msg ' + (msg.senderType === 'admin' ? 'admin-msg' : 'user-msg');
+
+    // Highlight only unread admin messages
+    if (!msg.read && msg.senderType === 'admin') {
+      div.classList.add('unread-highlight');
+    }
+
+    div.innerHTML = `
+      ${msg.message || ''}
+      ${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}
+    `;
+    chatBox.appendChild(div);
+
+    // Show status below the last user message only
+    const isLastUserMsg = msg.senderType === 'user' &&
+      [...messages].reverse().find((m) => m.senderType === 'user') === msg;
+
+    if (isLastUserMsg) {
+      const status = msg.read ? '✅ Read' : '🕓 Sent';
+      const statusDiv = document.createElement('div');
+      statusDiv.className = 'status';
+      statusDiv.textContent = status;
+      chatBox.appendChild(statusDiv);
+    }
+  });
+
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 
   document.getElementById('chatForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fileInput = document.getElementById('files');
-    const messageInput = document.getElementById('message');
-    const hasFile = fileInput.files.length > 0;
-    const hasMessage = messageInput.value.trim() !== '';
+    const formData = new FormData(e.target);
+    const hasMessage = formData.get('message').trim() !== '';
+    const hasFile = document.getElementById('files').files.length > 0;
 
-    if (!hasFile && !hasMessage) {
+    if (!hasMessage && !hasFile) {
       alert('Please enter a message or select a file.');
       return;
     }
 
-    const formData = new FormData(e.target);
     await fetch(`${BASE_URL}/send`, {
       method: 'POST',
       body: formData
@@ -201,11 +214,15 @@
     await loadMessages();
   });
 
-  // ✅ Refresh every 3 seconds
-  loadMessages();
-  setInterval(loadMessages, 3000);
+  (async function initChat() {
+    await markAdminMessagesRead();
+    await loadMessages();
+    setInterval(async () => {
+      await markAdminMessagesRead();
+      await loadMessages();
+    }, 3000);
+  })();
 </script>
-
 
 </body>
 </html>

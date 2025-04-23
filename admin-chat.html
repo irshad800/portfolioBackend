@@ -33,8 +33,7 @@
       flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
     }
     .msg {
-      max-width: 60%; margin: 10px; padding: 10px;
-      border-radius: 10px; word-break: break-word;
+      max-width: 60%; margin: 10px; padding: 10px; border-radius: 10px; word-break: break-word;
     }
     .admin-msg {
       align-self: flex-end;
@@ -55,8 +54,7 @@
       text-align: right;
     }
     form {
-      display: flex; gap: 10px;
-      padding: 10px; background: #fff; border-top: 1px solid #ddd;
+      display: flex; gap: 10px; padding: 10px; background: #fff; border-top: 1px solid #ddd;
     }
     textarea, input[type="file"] {
       flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;
@@ -96,21 +94,20 @@
   async function loadUsers() {
     const res = await fetch(`${BASE_URL}/users`);
     const users = await res.json();
-
     userList.innerHTML = '';
+
     for (const user of users) {
-      const unreadRes = await fetch(`${BASE_URL}/messages/${user._id}`);
-      const allMessages = await unreadRes.json();
-      const unreadCount = allMessages.filter(m => m.senderType === 'user' && !m.read).length;
+      const res = await fetch(`${BASE_URL}/messages/${user._id}`);
+      const messages = await res.json();
+      const unread = messages.filter(m => m.senderType === 'user' && !m.read).length;
 
       const div = document.createElement('div');
       div.className = 'user';
       div.textContent = user._id;
-
-      if (unreadCount > 0) {
+      if (unread > 0) {
         const badge = document.createElement('span');
         badge.className = 'badge';
-        badge.textContent = unreadCount;
+        badge.textContent = unread;
         div.appendChild(badge);
       }
 
@@ -123,27 +120,24 @@
     selectedUser = senderId;
     adminSenderIdInput.value = senderId;
     replyForm.style.display = 'flex';
-    await markRead(senderId);
-    await loadMessages(senderId);
-  }
-
-  async function markRead(senderId) {
     await fetch(`${BASE_URL}/mark-read/${senderId}`, { method: 'PUT' });
+    await loadMessages(senderId);
   }
 
   async function loadMessages(senderId) {
     const res = await fetch(`${BASE_URL}/messages/${senderId}`);
     const messages = await res.json();
-
     chatBox.innerHTML = '';
-    let unreadDividerShown = false;
+    let dividerShown = false;
+
+    const firstUnread = messages.findIndex(m => m.senderType === 'user' && !m.read);
 
     messages.forEach((msg, i) => {
-      if (!msg.read && msg.senderType === 'user' && !unreadDividerShown) {
+      if (!dividerShown && i === firstUnread) {
         const divider = document.createElement('div');
-        divider.innerHTML = '<hr><div style="text-align:center;color:#666;">Unread messages</div><hr>';
+        divider.innerHTML = '<hr><div style="text-align:center;color:#666;">Unread Messages</div><hr>';
         chatBox.appendChild(divider);
-        unreadDividerShown = true;
+        dividerShown = true;
       }
 
       const div = document.createElement('div');
@@ -152,11 +146,15 @@
         div.classList.add('unread-highlight');
       }
 
-      div.innerHTML = `${msg.message || ''}${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}`;
+      div.innerHTML = `
+        ${msg.message || ''}
+        ${msg.fileUrl ? `<br><a href="${msg.fileUrl}" target="_blank">📎 File</a>` : ''}
+      `;
       chatBox.appendChild(div);
 
-      // Only show status under last admin message
-      const isLastAdmin = msg.senderType === 'admin' && [...messages].reverse().find(m => m.senderType === 'admin') === msg;
+      const isLastAdmin = msg.senderType === 'admin' &&
+        [...messages].reverse().find(m => m.senderType === 'admin') === msg;
+
       if (isLastAdmin) {
         const statusDiv = document.createElement('div');
         statusDiv.className = 'status';
@@ -171,10 +169,19 @@
   replyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(replyForm);
+    const hasMessage = formData.get('message').trim() !== '';
+    const hasFile = formData.get('files').name;
+
+    if (!hasMessage && !hasFile) {
+      alert('Please enter a message or attach a file.');
+      return;
+    }
+
     await fetch(`${BASE_URL}/send`, {
       method: 'POST',
       body: formData
     });
+
     replyForm.reset();
     await loadMessages(selectedUser);
   });
@@ -183,7 +190,7 @@
   setInterval(() => {
     if (selectedUser) loadMessages(selectedUser);
     loadUsers();
-  }, 5000);
+  }, 3000);
 </script>
 
 </body>

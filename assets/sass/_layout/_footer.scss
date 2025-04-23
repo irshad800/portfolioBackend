@@ -1,0 +1,302 @@
+//footer
+.footer-section {
+	.talk-text {
+		font-size: 150px;
+		font-weight: 700;
+		line-height: 160px;
+		margin-bottom: 32px;
+	}
+	.infomail {
+		font-size: 30px;
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 16px 16px;
+		color: var(--white);
+	}
+	.footer-topping-wrap {
+		padding: 100px 60px;
+		margin-top: 60px;
+	}
+	.contact-left {
+		.pragraph-one {
+			margin-bottom: 40px;
+		}
+		.contact-infos {
+			margin-bottom: 40px;
+			a {
+				font-size: 18px;
+				color: var(--white);
+				display: block;
+				&:not(:last-child) {
+					margin-bottom: 20px;
+				}
+			}
+		}
+		.footer-social {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 20px;
+			.fsocial {
+				border: 1px solid var(--cmborder);
+				padding: 12px 12px;
+				border-radius: 100px;
+				color: var(--pra);
+				font-size: 16px;
+				text-transform: uppercase;
+				width: 150px;
+				transition: all 0.4s;
+				&:hover {
+					color: var(--white);
+				}
+			}
+		}
+	}
+	.cmn-contact-form {
+		input,
+		textarea {
+			width: 100%;
+			padding: 18px 28px 19px;
+			font-size: 16px;
+			color: var(--pra);
+			border-radius: 6px;
+			border: 1px solid var(--cmborder);
+			background: transparent;
+			font-weight: 400;
+		}
+		::placeholder {
+			color: var(--pra);
+		}
+		button {
+			border: 1px solid var(--cmborder);
+			border-radius: 6px;
+			background: transparent;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 16px;
+			font-weight: 700;
+			line-height: 28px;
+			color: var(--white);
+			padding: 16px 28px 18px;
+			transition: all 0.4s;
+			&:hover {
+				border-color: var(--pra);
+				color: var(--pwhite);
+			}
+		}
+	}
+	.copyright {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 34px 0;
+		p {
+			font-size: 16px;
+			color: var(--pra);
+		}
+		.terms {
+			display: flex;
+			gap: 38px;
+			li {
+				a {
+					font-size: 16px;
+					color: var(--pra);
+					transition: all 0.4s;
+				}
+				&:hover {
+					a {
+						color: var(--pwhtie);
+					}
+				}
+			}
+		}
+		.scroll-toptext {
+			text-decoration: underline;
+			font-size: 18px;
+			line-height: 1.556;
+			color: var(--white);
+		}
+		@include breakpoint(max-lg) {
+			flex-wrap: wrap;
+			display: grid;
+			gap: 16px;
+			justify-content: center;
+			text-align: center;
+			.terms {
+				justify-content: center;
+				gap: 24px;
+			}
+		}
+		@include breakpoint(max-xs) {
+			p {
+				font-size: 14px;
+			}
+			.terms {
+				display: flex;
+				gap: 14px;
+				li {
+					a {
+						font-size: 12px;
+					}
+					&:hover {
+						a {
+							color: var(--pwhtie);
+						}
+					}
+				}
+			}
+			.scroll-toptext {
+				font-size: 16px;
+			}
+		}
+	}
+	@include breakpoint(max-xxl) {
+		.talk-text {
+			font-size: 100px;
+			line-height: 140px;
+			margin-bottom: 28px;
+		}
+		.footer-topping-wrap {
+			padding: 80px 40px;
+			margin-top: 50px;
+		}
+		.copyright {
+			margin-left: 10px;
+			margin-right: 10px;
+		}
+	}
+	@include breakpoint(max-lg) {
+		.talk-text {
+			font-size: 70px;
+			line-height: 90px;
+			margin-bottom: 28px;
+		}
+		.infomail {
+			font-size: 19px;
+			max-width: none !important;
+			margin: 0 auto;
+			padding: 14px 26px;
+		}
+		.footer-topping-wrap {
+			padding: 50px 20px;
+		}
+		.contact-left {
+			margin-bottom: 40px;
+			.pragraph-one {
+				margin-bottom: 28px;
+				font-size: 16px;
+			}
+			.contact-infos {
+				a {
+					font-size: 14px !important;
+					&:not(:last-child) {
+						margin-bottom: 12px;
+					}
+				}
+			}
+			.footer-social {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				.fsocial {
+					padding: 9px 12px;
+					font-size: 12px;
+					width: 130px;
+				}
+			}
+		}
+		.cmn-contact-form {
+			input,
+			textarea {
+				width: 100%;
+				padding: 15px 20px 16px;
+				font-size: 14px;
+			}
+			button {
+				font-size: 14px;
+				font-weight: 600;
+				line-height: 24px;
+				padding: 12px 20px 14px;
+			}
+		}
+	}
+	@include breakpoint(max-md) {
+		.talk-text {
+			font-size: 50px;
+			line-height: 70px;
+			margin-bottom: 28px;
+		}
+		.infomail {
+			font-size: 14px;
+			max-width: none !important;
+			margin: 0 auto;
+			padding: 10px 22px;
+		}
+	}
+	@include breakpoint(max-sm) {
+		.talk-text {
+			font-size: 38px;
+			line-height: 48px;
+		}
+		.infomail {
+			font-size: 14px;
+			max-width: none !important;
+			margin: 0 10px;
+			padding: 10px 22px;
+		}
+		.contact-left {
+			margin-bottom: 30px;
+			.pragraph-one {
+				margin-bottom: 20px;
+				font-size: 14px;
+			}
+			.contact-infos {
+				margin-bottom: 24px;
+				a {
+					font-size: 12px !important;
+					&:not(:last-child) {
+						margin-bottom: 12px;
+					}
+				}
+			}
+			.footer-social {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 4px;
+				.fsocial {
+					padding: 7px 10px;
+					font-size: 11px;
+					width: 110px;
+				}
+			}
+		}
+		.footer-topping-wrap {
+			padding: 36px 10px;
+		}
+	}
+}
+//footer
+
+.check-box-style {
+	max-width: 1810px;
+	margin: 0 auto;
+	border: 1px solid rgb(38, 37, 37);
+	border-radius: 30px;
+	@media screen and (max-width: 1800px) {
+		margin: 10px;
+	}
+}
+.mb-common {
+	@media screen and (min-width: 1800px) {
+		margin-bottom: 35px;
+	}
+	@media screen and (max-width: 1800px) {
+		margin-bottom: 25px;
+	}
+}
+.cmn-shadow{
+	box-shadow: inset 4px 4px 12px rgb(56 53 53 / 27%), inset -4px -4px 12px rgb(58 56 56 / 32%);
+}
+.cmn-shadow2{
+	box-shadow: inset 4px 4px 12px #38353591, inset -4px -4px 12px #3a3838b9;
+}
