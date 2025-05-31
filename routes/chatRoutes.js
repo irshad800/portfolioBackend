@@ -63,18 +63,24 @@ router.post('/send', upload.array('files', 5), async (req, res) => {
 // ✅ Get messages for specific user
 router.get('/messages/:senderId', async (req, res) => {
   try {
+    const userId = req.params.senderId;
+    console.log("📩 Getting messages for:", userId); // Log incoming request
+
     const messages = await Message.find({
       $or: [
-        { senderId: req.params.senderId },
-        { senderType: 'admin', senderId: req.params.senderId }
+        { senderId: userId, senderType: 'user' },
+        { senderId: userId, senderType: 'admin' }
       ]
     }).sort({ createdAt: 1 });
 
+    console.log("📦 Messages found:", messages); // Log result
     res.json(messages);
   } catch (err) {
+    console.error("❌ Error in /messages/:senderId:", err); // Log error
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 // ✅ Get unique users list for admin with unread count
 router.get('/users', async (req, res) => {
