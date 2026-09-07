@@ -1,12 +1,54 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
+import webpush from 'web-push';
 import Visitor from '../models/Visitor.js';
 import ContactMessage from '../models/ContactMessage.js';
 import Admin from '../models/Admin.js';
+import PushSubscription from '../models/PushSubscription.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'irshad_portfolio_admin_secret_key_2026';
+
+// VAPID Web Push Keys
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BE8jgw7jFG3vi4_2a5NhsQ6v9iXgHzrmtU7zp8ZvPN0np-GJwUMV_rRZcwzIdEHZoX8fVyGLF4M7UHNCI3P9qS0';
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || 't8MGLlX-WzuBcuWfoctwjw8rSgiS_D9LN2zOgANatn0';
+
+try {
+  webpush.setVapidDetails(
+    'mailto:admin@irshadportfolio.com',
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY
+  );
+} catch (e) {
+  console.error('VAPID setup warning:', e.message);
+}
+
+// Helper to trigger Background Web Push Notification (works even when Chrome/Browser is closed)
+async function sendBackgroundPushNotification(payload) {
+  try {
+    const subscriptions = await PushSubscription.find();
+    const notificationPayload = JSON.stringify(payload);
+
+    const pushPromises = subscriptions.map(sub => 
+      webpush.sendNotification(
+        {
+          endpoint: sub.endpoint,
+          keys: sub.keys
+        },
+        notificationPayload
+      ).catch(async err => {
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          await PushSubscription.deleteOne({ _id: sub._id });
+        }
+      })
+    );
+
+    await Promise.all(pushPromises);
+  } catch (err) {
+    console.error('Background Web Push error:', err.message);
+  }
+}
 
 // Middleware to verify Admin JWT Token
 export const authMiddleware = (req, res, next) => {
@@ -55,6 +97,36 @@ async function getGeoData(ip) {
 
 // ==================== PUBLIC ROUTES ====================
 
+// GET VAPID Public Key for Web Push Subscriptions
+router.get('/push/vapid-public-key', (req, res) => {
+  res.json({ success: true, publicKey: VAPID_PUBLIC_KEY });
+});
+
+// POST Save Web Push Subscription
+router.post('/push/subscribe', authMiddleware, async (req, res) => {
+  try {
+    const subscription = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ success: false, message: 'Invalid subscription object' });
+    }
+
+    await PushSubscription.findOneAndUpdate(
+      { endpoint: subscription.endpoint },
+      {
+        endpoint: subscription.endpoint,
+        keys: subscription.keys,
+        adminUsername: req.admin?.username || 'admin'
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ success: true, message: 'Background Web Push subscription registered!' });
+  } catch (err) {
+    console.error('Error saving push subscription:', err);
+    res.status(500).json({ success: false, message: 'Failed to save push subscription' });
+  }
+});
+
 // 1. Silent Visitor & Country Logging Endpoint
 router.post('/visit', async (req, res) => {
   try {
@@ -77,6 +149,13 @@ router.post('/visit', async (req, res) => {
     });
 
     await visitor.save();
+
+    // Trigger background Web Push Notification to OS tray (even if browser is closed)
+    sendBackgroundPushNotification({
+      title: '👁️ New Portfolio Visit!',
+      body: `New visit from ${geo.country} (${deviceType})`
+    });
+
     res.json({ success: true, country: geo.country, countryCode: geo.countryCode, deviceType });
   } catch (err) {
     console.error('Error logging visit:', err);
@@ -107,6 +186,13 @@ router.post('/contact', async (req, res) => {
     });
 
     await contactMsg.save();
+
+    // Trigger background Web Push Notification to OS tray (even if browser is closed)
+    sendBackgroundPushNotification({
+      title: '📩 New Contact Message!',
+      body: `${name} from ${geo.country}: "${subject || 'New Contact'}"`
+    });
+
     res.json({ success: true, message: 'Message sent and stored successfully!' });
   } catch (err) {
     console.error('Error saving contact message:', err);
