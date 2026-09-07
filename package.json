@@ -2,11 +2,11 @@
   "name": "portfolio-backend",
   "version": "1.0.0",
   "description": "MongoDB Backend for Portfolio Analytics, Contact Form & Admin Panel",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "axios": "^1.7.9",
