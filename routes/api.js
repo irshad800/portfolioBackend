@@ -213,10 +213,10 @@ router.get('/admin/analytics', authMiddleware, async (req, res) => {
       }
     });
 
-    // Recent 20 visitors
+    // Recent visitors (up to 100 records for filtering)
     const recentVisitors = await Visitor.find()
       .sort({ timestamp: -1 })
-      .limit(20);
+      .limit(100);
 
     res.json({
       success: true,
