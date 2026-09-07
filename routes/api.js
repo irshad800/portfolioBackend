@@ -184,20 +184,32 @@ router.get('/admin/analytics', authMiddleware, async (req, res) => {
     const deviceStatsRaw = await Visitor.aggregate([
       {
         $group: {
-          _id: '$deviceType',
+          _id: { $ifNull: ['$deviceType', 'Desktop'] },
           count: { $sum: 1 }
         }
       }
     ]);
 
     const devices = {
+      desktop: 0,
+      mobile: 0,
+      tablet: 0,
       Desktop: 0,
       Mobile: 0,
       Tablet: 0
     };
+
     deviceStatsRaw.forEach(item => {
-      if (item._id && devices.hasOwnProperty(item._id)) {
-        devices[item._id] = item.count;
+      const type = item._id || 'Desktop';
+      if (type === 'Mobile' || type === 'mobile') {
+        devices.mobile += item.count;
+        devices.Mobile += item.count;
+      } else if (type === 'Tablet' || type === 'tablet') {
+        devices.tablet += item.count;
+        devices.Tablet += item.count;
+      } else {
+        devices.desktop += item.count;
+        devices.Desktop += item.count;
       }
     });
 
