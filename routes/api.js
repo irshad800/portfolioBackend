@@ -388,4 +388,20 @@ router.put('/admin/change-password', authMiddleware, async (req, res) => {
   }
 });
 
+// 9. Clear All Visitor Logs & Contact Messages from MongoDB
+router.delete('/admin/clear-all-data', authMiddleware, async (req, res) => {
+  try {
+    const deletedVisitors = await Visitor.deleteMany({});
+    const deletedMessages = await ContactMessage.deleteMany({});
+
+    res.json({
+      success: true,
+      message: `Cleared ${deletedVisitors.deletedCount} visitor logs and ${deletedMessages.deletedCount} messages from database.`
+    });
+  } catch (err) {
+    console.error('Error clearing data:', err);
+    res.status(500).json({ success: false, message: 'Failed to clear database logs' });
+  }
+});
+
 export default router;
