@@ -9,7 +9,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/portfolio';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://irshadvp800_db_user:GGGLYOlFnMHH5TEK@cluster0.yizgehu.mongodb.net/portfolio?retryWrites=true&w=majority';
 
 // Middlewares
 app.use(cors());
