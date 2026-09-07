@@ -24,6 +24,12 @@ export const authMiddleware = (req, res, next) => {
   }
 };
 
+function getDeviceType(ua = '') {
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return 'Tablet';
+  if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated/i.test(ua)) return 'Mobile';
+  return 'Desktop';
+}
+
 // IP Geolocation Helper
 async function getGeoData(ip) {
   try {
@@ -55,6 +61,7 @@ router.post('/visit', async (req, res) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
     const userAgent = req.headers['user-agent'] || '';
     const path = req.body.path || '/';
+    const deviceType = getDeviceType(userAgent);
 
     const geo = await getGeoData(clientIp);
 
@@ -64,12 +71,13 @@ router.post('/visit', async (req, res) => {
       countryCode: geo.countryCode,
       city: geo.city,
       region: geo.region,
+      deviceType,
       userAgent,
       path
     });
 
     await visitor.save();
-    res.json({ success: true, country: geo.country, countryCode: geo.countryCode });
+    res.json({ success: true, country: geo.country, countryCode: geo.countryCode, deviceType });
   } catch (err) {
     console.error('Error logging visit:', err);
     res.status(500).json({ success: false, message: 'Server error logging visit' });
@@ -172,6 +180,27 @@ router.get('/admin/analytics', authMiddleware, async (req, res) => {
       lastVisited: item.lastVisited
     }));
 
+    // Device Breakdown Aggregation
+    const deviceStatsRaw = await Visitor.aggregate([
+      {
+        $group: {
+          _id: '$deviceType',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const devices = {
+      Desktop: 0,
+      Mobile: 0,
+      Tablet: 0
+    };
+    deviceStatsRaw.forEach(item => {
+      if (item._id && devices.hasOwnProperty(item._id)) {
+        devices[item._id] = item.count;
+      }
+    });
+
     // Recent 20 visitors
     const recentVisitors = await Visitor.find()
       .sort({ timestamp: -1 })
@@ -185,6 +214,7 @@ router.get('/admin/analytics', authMiddleware, async (req, res) => {
         unreadMessages,
         uniqueCountriesCount: countries.length
       },
+      devices,
       countries,
       recentVisitors
     });
